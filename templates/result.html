@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>채점 결과 - 생물분류기사 식물 CBT</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f8f9fa; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        
+        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .btn-restart { padding: 12px 24px; background: #2e7d32; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px; transition: background 0.2s; }
+        .btn-restart:hover { background: #1b5e20; }
+
+        .score-box { background: #e8f5e9; border: 2px solid #2e7d32; border-radius: 10px; padding: 25px; text-align: center; margin-bottom: 30px; }
+        .score-box h1 { margin: 0; color: #2e7d32; font-size: 40px; }
+        .score-box p { margin: 8px 0 0 0; color: #555; font-size: 16px; }
+
+        .card { border: 1px solid #ddd; border-radius: 8px; margin-bottom: 25px; overflow: hidden; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.04); }
+        .card-header { background: #f4f6f8; padding: 12px 20px; font-weight: bold; font-size: 17px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; }
+        .score-badge { background: #2e7d32; color: white; padding: 4px 10px; border-radius: 12px; font-size: 14px; }
+
+        .split-view { display: flex; border-bottom: 1px solid #eee; }
+        .split-side { flex: 1; padding: 20px; }
+        .split-side.left { border-right: 2px dashed #ddd; background: #fafafa; }
+        .split-side.right { background: #fff; }
+        
+        .side-title { font-size: 16px; font-weight: bold; margin-bottom: 15px; padding-bottom: 6px; border-bottom: 2px solid #333; }
+        .side-title.user { border-color: #0d6efd; color: #0d6efd; }
+        .side-title.correct { border-color: #2e7d32; color: #2e7d32; }
+
+        .ans-table { width: 100%; border-collapse: collapse; }
+        .ans-table th, .ans-table td { border: 1px solid #e0e0e0; padding: 10px; text-align: center; font-size: 15px; }
+        .ans-table th { background: #f0f0f0; width: 30%; font-weight: bold; }
+
+        .is-correct { color: #2e7d32; font-weight: bold; background: #e8f5e9; }
+        .is-wrong { color: #d32f2f; font-weight: bold; background: #ffebee; }
+        
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 5px; }
+        .badge-ok { background: #2e7d32; color: white; }
+        .badge-no { background: #d32f2f; color: white; }
+
+        .thumb-list { display: flex; gap: 10px; padding: 15px 20px; background: #222; overflow-x: auto; }
+        .thumb-list img { height: 100px; object-fit: contain; border-radius: 4px; border: 1px solid #444; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-bar">
+            <h2 style="margin:0; color:#2e7d32;">생물분류기사 식물 CBT - 채점 결과</h2>
+            <a href="{{ url_for('start') }}" class="btn-restart">🔄 다시 풀기</a>
+        </div>
+        
+        <div class="score-box">
+            <h1>최종 점수: {{ total_score }} / 100 점</h1>
+            <p>총 {{ total_q }}문제 중 출제 | 1개 답안 항목당 {{ "%.2f"|format(score_per_item) }}점 책정 (총 3개 항목)</p>
+        </div>
+
+        {% for r in results %}
+        <div class="card">
+            <div class="card-header">
+                <span>문제 {{ r.num }}</span>
+                <span class="score-badge">획득 점수: {{ r.item_score }}점</span>
+            </div>
+
+            {% if r.item.img_list %}
+            <div class="thumb-list">
+                {% for img in r.item.img_list %}
+                    <img src="{{ url_for('static', filename='images/' + img) }}" alt="문제 사진">
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="split-view">
+                <!-- 내가 작성한 답안 (3개 항목) -->
+                <div class="split-side left">
+                    <div class="side-title user">✏️ 내가 제출한 답안</div>
+                    <table class="ans-table">
+                        <tr>
+                            <th>과</th>
+                            <td class="{{ 'is-correct' if r.check.family else 'is-wrong' }}">
+                                {{ r.user_ans.get('family', '-') or '-' }}
+                                <span class="badge {{ 'badge-ok' if r.check.family else 'badge-no' }}">{{ 'O' if r.check.family else 'X' }}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>종명</th>
+                            <td class="{{ 'is-correct' if r.check.species else 'is-wrong' }}">
+                                {{ r.user_ans.get('species', '-') or '-' }}
+                                <span class="badge {{ 'badge-ok' if r.check.species else 'badge-no' }}">{{ 'O' if r.check.species else 'X' }}</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>멸종위기종</th>
+                            <td class="{{ 'is-correct' if r.check.endangered else 'is-wrong' }}">
+                                {{ r.user_ans.get('endangered', '-') or '-' }}
+                                <span class="badge {{ 'badge-ok' if r.check.endangered else 'badge-no' }}">{{ 'O' if r.check.endangered else 'X' }}</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+
+                <!-- 실제 정답 (3개 항목) -->
+                <div class="split-side right">
+                    <div class="side-title correct">✅ 실제 정답</div>
+                    <table class="ans-table">
+                        <tr><th>과</th><td class="is-correct">{{ r.item.family }}</td></tr>
+                        <tr><th>종명</th><td class="is-correct">{{ r.item.species }}</td></tr>
+                        <tr><th>멸종위기종</th><td class="is-correct">{{ r.item.endangered }}</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

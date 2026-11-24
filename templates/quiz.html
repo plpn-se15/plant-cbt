@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>생물분류기사 식물 CBT ({{ idx + 1 }}/{{ total }})</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f8f9fa; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #2e7d32; padding-bottom: 10px; margin-bottom: 15px; }
+        .header h2 { margin: 0; color: #2e7d32; font-size: 22px; }
+        .header h3 { margin: 0; color: #555; font-size: 18px; }
+
+        .progress-box { margin-bottom: 20px; }
+        .progress-info { display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; color: #555; margin-bottom: 6px; }
+        .progress-bar-bg { width: 100%; height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; background: #2e7d32; width: {{ ((idx + 1) / total * 100)|round(1) }}%; transition: width 0.3s ease; }
+
+        .viewer-container { position: relative; width: 100%; height: 420px; background: #1e1e1e; border-radius: 8px; overflow: hidden; display: flex; justify-content: center; align-items: center; user-select: none; }
+        .img-wrapper { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .img-wrapper img { max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.1s ease-out; transform-origin: center center; }
+
+        .img-nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: 2px solid transparent; font-size: 28px; padding: 15px 12px; cursor: pointer; border-radius: 5px; z-index: 10; transition: all 0.2s; outline: none; }
+        .img-nav-btn.prev { left: 10px; }
+        .img-nav-btn.next { right: 10px; }
+        .img-nav-btn:hover, .img-nav-btn:focus { background: rgba(0,0,0,0.85); border-color: #ffc107; }
+        
+        .img-counter { position: absolute; bottom: 12px; right: 15px; background: rgba(0,0,0,0.6); color: white; padding: 4px 12px; border-radius: 15px; font-size: 14px; }
+        .zoom-hint { position: absolute; top: 12px; left: 15px; background: rgba(0,0,0,0.6); color: #ddd; padding: 5px 12px; border-radius: 5px; font-size: 12px; }
+
+        /* 3개 항목 한 줄 레이아웃 */
+        .form-grid-3cols { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 15px; margin: 25px 0; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-weight: bold; margin-bottom: 6px; color: #333; font-size: 15px; }
+        .form-group input[type="text"] { padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; outline: none; }
+        .form-group input[type="text"]:focus { border-color: #2e7d32; box-shadow: 0 0 5px rgba(46,125,50,0.4); }
+
+        .radio-options { display: flex; gap: 8px; height: 42px; }
+        .radio-option { flex: 1; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; background: #fff; transition: all 0.2s; outline: none; }
+        .radio-option input[type="radio"] { display: none; }
+        .radio-option:has(input[type="radio"]:checked) { background-color: #2e7d32; color: white; border-color: #2e7d32; }
+        .radio-option:focus-visible { outline: 2px solid #ffc107; outline-offset: 2px; }
+
+        .btn-group { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .btn { padding: 12px 28px; font-size: 16px; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; transition: background 0.2s; outline: none; }
+        .btn:focus-visible { outline: 3px solid #ffc107; outline-offset: 2px; }
+        .btn-prev { background-color: #6c757d; color: white; }
+        .btn-prev:hover { background-color: #5a6268; }
+        .btn-next { background-color: #0d6efd; color: white; }
+        .btn-next:hover { background-color: #0b5ed7; }
+        .btn-submit { background-color: #198754; color: white; }
+        .btn-submit:hover { background-color: #157347; }
+
+        .toast-msg { display: none; position: fixed; top: 30px; left: 50%; transform: translateX(-50%); background: #212529; color: #fff; padding: 15px 30px; border-radius: 8px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 1000; border-left: 5px solid #ffc107; }
+    </style>
+</head>
+<body>
+    <div id="toast" class="toast-msg">⚠️ 마지막 문제입니다. Enter 키를 눌러 채점하세요!</div>
+
+    <div class="container">
+        <div class="header">
+            <h2>생물분류기사 식물 CBT</h2>
+            <h3>문제 {{ idx + 1 }} / {{ total }}</h3>
+        </div>
+
+        <div class="progress-box">
+            <div class="progress-info">
+                <span>진행 현황</span>
+                <span>{{ idx + 1 }} / {{ total }} 문제 ({{ ((idx + 1) / total * 100)|int }}%)</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill"></div>
+            </div>
+        </div>
+
+        <div class="viewer-container" id="viewer">
+            <span class="zoom-hint">💡 Ctrl+휠: 확대/축소 | ←/→: 사진전환 | Tab: 순서 이동</span>
+            
+            {% if item.img_list|length > 1 %}
+                <button type="button" class="img-nav-btn prev" onclick="changeImage(-1)" tabindex="1">&#10094;</button>
+                <button type="button" class="img-nav-btn next" onclick="changeImage(1)" tabindex="2">&#10095;</button>
+            {% endif %}
+
+            <div class="img-wrapper">
+                {% if item.img_list %}
+                    <img id="activeImg" src="{{ url_for('static', filename='images/' + item.img_list[0]) }}" alt="식물 이미지">
+                {% else %}
+                    <div style="color: white;">이미지가 없습니다.</div>
+                {% endif %}
+            </div>
+
+            <div class="img-counter">
+                사진 <span id="imgIndex">1</span> / {{ item.img_list|length }}
+            </div>
+        </div>
+
+        <!-- 답안 입력 폼 (과, 종명, 멸종위기종 3개 항목) -->
+        <form method="POST" id="quizForm">
+            <div class="form-grid-3cols">
+                <div class="form-group">
+                    <label for="family">과</label>
+                    <input type="text" id="family" name="family" value="{{ saved.get('family', '') }}" autocomplete="off" placeholder="예: 국화과" tabindex="3">
+                </div>
+                <div class="form-group">
+                    <label for="species">종명</label>
+                    <input type="text" id="species" name="species" value="{{ saved.get('species', '') }}" autocomplete="off" placeholder="예: 민들레" tabindex="4">
+                </div>
+                <div class="form-group">
+                    <label>멸종위기종 여부</label>
+                    <div class="radio-options">
+                        {% set current_endangered = saved.get('endangered', '-') %}
+                        <label class="radio-option" tabindex="5">
+                            <input type="radio" name="endangered" value="-" {% if current_endangered == '-' or not current_endangered %}checked{% endif %}> -
+                        </label>
+                        <label class="radio-option" tabindex="6">
+                            <input type="radio" name="endangered" value="Ⅱ" {% if current_endangered == 'Ⅱ' or current_endangered == 'II' %}checked{% endif %}> Ⅱ
+                        </label>
+                        <label class="radio-option" tabindex="7">
+                            <input type="radio" name="endangered" value="Ⅰ" {% if current_endangered == 'Ⅰ' or current_endangered == 'I' %}checked{% endif %}> Ⅰ
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                {% if idx > 0 %}
+                    <button type="submit" id="btnPrev" name="action" value="prev" class="btn btn-prev" tabindex="9">이전 문제</button>
+                {% else %}
+                    <div></div>
+                {% endif %}
+
+                {% if idx < total - 1 %}
+                    <button type="submit" id="btnNext" name="action" value="next" class="btn btn-next" tabindex="8">다음 문제</button>
+                {% else %}
+                    <button type="submit" id="btnSubmit" name="action" value="submit" class="btn btn-submit" tabindex="8">채점하기 (Enter)</button>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const images = {{ item.img_list | tojson }};
+        const isLastQuestion = {{ 'true' if idx == total - 1 else 'false' }};
+        let currentImgIdx = 0;
+        let scale = 1;
+
+        const activeImg = document.getElementById('activeImg');
+        const imgIndexSpan = document.getElementById('imgIndex');
+        const viewer = document.getElementById('viewer');
+        const toast = document.getElementById('toast');
+
+        function changeImage(direction) {
+            if (!images || images.length === 0) return;
+            currentImgIdx += direction;
+            if (currentImgIdx < 0) currentImgIdx = images.length - 1;
+            if (currentImgIdx >= images.length) currentImgIdx = 0;
+            
+            activeImg.src = "{{ url_for('static', filename='images/') }}" + images[currentImgIdx];
+            imgIndexSpan.innerText = currentImgIdx + 1;
+            resetZoom();
+        }
+
+        document.addEventListener('keydown', function(event) {
+            const activeEl = document.activeElement;
+            const isTextInput = (activeEl.tagName === 'INPUT' && activeEl.type === 'text');
+
+            if (event.key === 'Enter') {
+                if (isLastQuestion) {
+                    event.preventDefault();
+                    const btnSubmit = document.getElementById('btnSubmit');
+                    if (btnSubmit) btnSubmit.click();
+                }
+            }
+
+            if (event.key === ' ' || event.key === 'Spacebar') {
+                if (activeEl && activeEl.classList.contains('radio-option')) {
+                    event.preventDefault();
+                    const radioInput = activeEl.querySelector('input[type="radio"]');
+                    if (radioInput) radioInput.checked = true;
+                }
+            }
+
+            if (!isTextInput) {
+                if (event.key === 'ArrowLeft' && images.length > 1) changeImage(-1);
+                else if (event.key === 'ArrowRight' && images.length > 1) changeImage(1);
+            }
+        });
+
+        viewer.addEventListener('wheel', function(event) {
+            if (event.ctrlKey) {
+                event.preventDefault();
+                const zoomFactor = 0.15;
+                if (event.deltaY < 0) scale = Math.min(scale + zoomFactor, 3.5);
+                else scale = Math.max(scale - zoomFactor, 1.0);
+                activeImg.style.transform = `scale(${scale})`;
+            }
+        }, { passive: false });
+
+        function resetZoom() {
+            scale = 1;
+            if (activeImg) activeImg.style.transform = 'scale(1)';
+        }
+    </script>
+</body>
+</html>

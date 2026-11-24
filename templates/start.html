@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>생물분류기사 식물 실기 CBT</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f6f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; max-width: 440px; width: 100%; }
+        h1 { color: #2e7d32; font-size: 24px; margin-bottom: 15px; }
+        p { color: #666; margin-bottom: 25px; line-height: 1.5; font-size: 15px; }
+        .radio-group { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; }
+        .radio-label { font-size: 17px; font-weight: bold; cursor: pointer; padding: 14px 20px; border: 2px solid #ddd; border-radius: 8px; transition: all 0.2s; display: block; }
+        .radio-sub { font-size: 12px; font-weight: normal; color: #888; display: block; margin-top: 4px; }
+        .radio-group input[type="radio"] { display: none; }
+        .radio-group input[type="radio"]:checked + .radio-label { border-color: #2e7d32; background: #e8f5e9; color: #2e7d32; }
+        .radio-group input[type="radio"]:checked + .radio-label .radio-sub { color: #2e7d32; }
+        .btn-start { width: 100%; padding: 14px; background: #2e7d32; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        .btn-start:hover { background: #1b5e20; }
+        
+        /* 추가된 검색 및 맞춤 모의고사 버튼 스타일 */
+        .sub-menu { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-sub { flex: 1; padding: 11px; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 14px; text-align: center; transition: opacity 0.2s; }
+        .btn-sub:hover { opacity: 0.9; }
+        .btn-search { background: #6c757d; }
+        .btn-custom { background: #0d6efd; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>생물분류기사 식물 실기 CBT</h1>
+        <p>시험 응시 문제 수를 선택한 후<br><b>[시험 시작하기]</b> 버튼을 눌러주세요.</p>
+        <form method="POST" action="{{ url_for('start_quiz') }}">
+            <div class="radio-group">
+                <label>
+                    <input type="radio" name="num_questions" value="20" checked>
+                    <span class="radio-label">
+                        20 문제
+                        <span class="radio-sub">(문제당 5점)</span>
+                    </span>
+                </label>
+                <label>
+                    <input type="radio" name="num_questions" value="50">
+                    <span class="radio-label">
+                        50 문제
+                        <span class="radio-sub">(문제당 2점)</span>
+                    </span>
+                </label>
+            </div>
+            <button type="submit" class="btn-start">시험 시작하기</button>
+        </form>
+
+        <!-- 종 검색 및 맞춤 모의고사 진입 버튼 영역 -->
+        <div class="sub-menu">
+            <a href="{{ url_for('search') }}" class="btn-sub btn-search">🔍 종 검색 도감</a>
+            <a href="{{ url_for('custom_quiz') }}" class="btn-sub btn-custom">🎯 맞춤 모의고사</a>
+        </div>
+    </div>
+</body>
+</html>

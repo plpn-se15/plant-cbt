@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>종 검색 및 도감 - CBT</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 30px; background: #f8f9fa; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        .nav { margin-bottom: 20px; }
+        .nav a { text-decoration: none; color: #2e7d32; font-weight: bold; }
+        .search-box { display: flex; gap: 10px; margin-bottom: 30px; }
+        .search-box input { flex: 1; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; }
+        .search-box button { padding: 12px 24px; background: #2e7d32; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .card { border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 20px; padding: 20px; background: #fff; }
+        .card h3 { margin-top: 0; color: #2e7d32; }
+        .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; background: #f4f6f8; padding: 10px; border-radius: 6px; }
+        .images-row { display: flex; gap: 10px; overflow-x: auto; padding-top: 10px; }
+        .images-row img { height: 120px; object-fit: contain; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="{{ url_for('start') }}">🏠 메인으로 돌아가기</a>
+        </div>
+        <h2>🔍 종(Species) 검색 도감</h2>
+        <form method="GET" class="search-box">
+            <input type="text" name="q" value="{{ query }}" placeholder="식물명, 속명, 과명을 입력하세요 (예: 벚나무, 장미과)">
+            <button type="submit">검색</button>
+        </form>
+
+        {% if query %}
+            <p><b>'{{ query }}'</b> 검색 결과: 총 {{ results|length }}건</p>
+            {% for item in results %}
+            <div class="card">
+                <h3>{{ item.species }} <span style="font-size:14px; color:#666;">({{ item.genus }} / {{ item.family }})</span></h3>
+                <div class="info-grid">
+                    <div><b>과:</b> {{ item.family }}</div>
+                    <div><b>속:</b> {{ item.genus }}</div>
+                    <div><b>종명:</b> {{ item.species }}</div>
+                    <div><b>멸종위기종:</b> {{ item.endangered }}</div>
+                </div>
+                {% if item.img_list %}
+                <div class="images-row">
+                    {% for img in item.img_list %}
+                    <img src="{{ url_for('static', filename='images/' + img) }}" alt="참고 사진">
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</body>
+</html>

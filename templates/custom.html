@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>맞춤 모의고사 선택 - CBT</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; padding: 30px; background: #f8f9fa; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        .nav { margin-bottom: 20px; }
+        .nav a { text-decoration: none; color: #2e7d32; font-weight: bold; }
+        .list-box { max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; padding: 15px; margin-bottom: 20px; background: #fafafa; }
+        .item-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .item-row label { cursor: pointer; font-size: 15px; margin-left: 8px; }
+        .btn-submit { width: 100%; padding: 14px; background: #2e7d32; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        .btn-submit:hover { background: #1b5e20; }
+        .ctrl-btns { margin-bottom: 15px; }
+        .ctrl-btns button { padding: 6px 12px; margin-right: 5px; cursor: pointer; border: 1px solid #ccc; background: #fff; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="{{ url_for('start') }}">🏠 메인으로 돌아가기</a>
+        </div>
+        <h2>🎯 나만의 맞춤 모의고사 범위 선택</h2>
+        <p>연습하고 싶은 종들을 직접 선택한 후 하단의 [맞춤 시험 시작하기]를 누르세요.</p>
+        
+        <div class="ctrl-btns">
+            <button type="button" onclick="selectAll(true)">전체 선택</button>
+            <button type="button" onclick="selectAll(false)">전체 해제</button>
+        </div>
+
+        <form method="POST">
+            <div class="list-box">
+                {% for sp in species_list %}
+                <div class="item-row">
+                    <input type="checkbox" name="selected_codes" value="{{ sp.code }}" id="chk_{{ sp.code }}" checked>
+                    <label for="chk_{{ sp.code }}"><b>{{ sp.species }}</b> (과: {{ sp.family }})</label>
+                </div>
+                {% endfor %}
+            </div>
+            <button type="submit" class="btn-submit">선택한 종으로 모의고사 시작하기</button>
+        </form>
+    </div>
+
+    <script>
+        function selectAll(status) {
+            const checkboxes = document.querySelectorAll('input[name="selected_codes"]');
+            checkboxes.forEach(chk => chk.checked = status);
+        }
+    </script>
+</body>
+</html>
