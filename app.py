@@ -6,14 +6,15 @@ app = Flask(__name__)
 app.secret_key = 'plant_cbt_secret_key_2026_fixed'
 
 def get_db():
-    db_file = 'plants_db.csv'
-    if not os.path.exists(db_file):
-        return pd.DataFrame()
-    try:
-        df = pd.read_csv(db_file, encoding='utf-8-sig')
-    except:
-        df = pd.read_csv(db_file, encoding='utf-8')
-    return df.fillna('')
+  db_file = 'plants_db.csv'
+  if not os.path.exists(db_file):
+    return pd.DataFrame()
+  try:
+    df = pd.read_csv(db_file, encoding='utf-8-sig')
+  except:
+    df = pd.read_csv(db_file, encoding='utf-8')
+  df.columns = df.columns.str.strip().str.strip("'").str.strip('"')
+  return df.fillna('')
 
 def parse_images(img_str):
     if not img_str:
