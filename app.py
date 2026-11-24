@@ -6,7 +6,8 @@ app = Flask(__name__)
 app.secret_key = 'plant_cbt_secret_key_2026_fixed'
 
 def get_db():
-  db_file = 'plants_db.csv'
+  base_dir = os.path.dirname(os.path.abspath(__file__))
+  db_file = os.path.join(base_dir, 'plants_db.csv')
   if not os.path.exists(db_file):
     return pd.DataFrame()
   try:
